@@ -147,7 +147,6 @@ Run `model/final_model_classification.ipynb` if you want the walkthrough version
 - The plain script `train_model.py` is the preferred reproducible training entrypoint.
 - Python `3.11` is the recommended runtime for reproduction because `optbinning` and its `ortools` dependency do not install cleanly in the default Python `3.13` environment on this machine.
 - The final PDF report is treated as the source of truth for model selection and threshold narrative.
-- The saved file `configuration/parameter/ElasticNet_youden_threshold.json` contains `0.514588...`, which does not align with the report's final Elastic Net Youden threshold (`0.5788`). It appears to match a different experiment artifact, so it should not be treated as the final deployed threshold without re-validation.
 - The included notebook supports the analysis workflow, but the report contains the fuller evaluation narrative.
 
 ## Files to Review First
