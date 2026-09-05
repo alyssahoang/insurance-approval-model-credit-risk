@@ -1,10 +1,26 @@
-# Insurance Approval Modeling with WoE and IV
+# Insurance Risk Scoring – Which approvals can we trust?
+
+A risk model that explains itself: 57K travel-insurance records, a 1.46% positive rate, and a logistic regression you could defend in a meeting.
+
+![Cross-validated balanced accuracy and AUROC by model — SVM overfits, Elastic Net holds](assets/cv-model-comparison.png)
+
+[Full report (PDF)](report.pdf) · [Notebook](model/final_model_classification.ipynb) · [Training script](train_model.py)
+
+## Results
+
+- **AUROC 0.83, recall 0.71, balanced accuracy 0.76** in 5-fold stratified CV for Elastic Net logistic regression on WoE features with SMOTE — from a 1.46% base rate.
+- **Removing low-IV features helped, slightly:** AUROC 0.828 → 0.830, recall 0.697 → 0.709, balanced accuracy flat at ~0.758. Fewer features, same signal, easier to explain.
+- **SVM-RBF looked best on train (AUROC 0.85) and worst on validation (0.67–0.78)** — excluded for overfitting. The chart above is the whole argument.
+- **The 0.50 cutoff is the wrong operating point.** Cost-weighted and Youden thresholds land at ~0.58; the report's selected operating point trades to recall 0.63 / balanced accuracy 0.74 for lower total cost.
+- Every decision is traceable feature-by-feature through the WoE bins — no black box.
+
+## Context
 
 This project builds an interpretable classification workflow for travel insurance approval decisions. The core problem is operationally realistic: only a small fraction of claims are approved, categorical fields are high-cardinality, and a useful model needs to improve minority-class detection without becoming a black box.
 
-The final recommendation is an Elastic Net logistic regression pipeline trained on Weight of Evidence (WoE) transformed features, filtered with Information Value (IV), and balanced with SMOTE. In cross-validation, the best WoE + IV setup reached an AUROC of about `0.83`, while the selected Elastic Net operating point in the report achieved recall around `0.63` and balanced accuracy around `0.74`.
+The final recommendation is an Elastic Net logistic regression pipeline trained on Weight of Evidence (WoE) transformed features, filtered with Information Value (IV), and balanced with SMOTE.
 
-## Business Context
+### Business trade-off
 
 Insurance approval models sit in a tight trade-off space:
 
@@ -52,9 +68,11 @@ The report concludes that SVM showed overfitting and was excluded from final con
 
 The project also evaluates post-model threshold selection, including cost-based and Youden-style operating points. This matters because the best probability cutoff in an imbalanced insurance problem is usually not `0.50`.
 
-## Results
+## Detailed results
 
-The public headline results below are taken from the final report included in this repository.
+Figures are taken from the final report in this repository.
+
+![Metrics and total cost vs decision threshold](assets/threshold-cost-curves.png)
 
 ### WoE + IV Feature Selection
 
@@ -76,15 +94,6 @@ In repeated stratified cross-validation, Elastic Net remained one of the most st
 
 The final report recommends **Elastic Net with WoE encoding, IV-based filtering, SMOTE balancing, and a tuned decision threshold** as the best overall business-facing solution.
 
-## Why This Project Matters
-
-This repository is a useful portfolio case because it demonstrates more than standard model training:
-
-- It handles extreme class imbalance in a structured way.
-- It uses credit-scoring style techniques such as WoE and IV in an insurance setting.
-- It compares interpretability against non-linear performance.
-- It shows that threshold selection is a business decision, not just a modeling detail.
-
 ## Repository Structure
 
 ```text
@@ -92,7 +101,8 @@ This repository is a useful portfolio case because it demonstrates more than sta
 |- README.md
 |- environment.yml
 |- train_model.py
-|- (Report) Applying Weight-of-Evidence and Information Value to Insurance Approval Models.pdf
+|- report.pdf
+|- assets/
 |- configuration/
 |  |- classification_model.pkl
 |  `- parameter/
@@ -145,7 +155,7 @@ Run `model/final_model_classification.ipynb` if you want the walkthrough version
 
 - The notebook is a cleaned portfolio artifact, not a production package.
 - The plain script `train_model.py` is the preferred reproducible training entrypoint.
-- Python `3.11` is the recommended runtime for reproduction because `optbinning` and its `ortools` dependency do not install cleanly in the default Python `3.13` environment on this machine.
+- Python `3.11` is the recommended runtime: `optbinning` and its `ortools` dependency do not install cleanly on Python `3.13`.
 - The final PDF report is treated as the source of truth for model selection and threshold narrative.
 - The included notebook supports the analysis workflow, but the report contains the fuller evaluation narrative.
 
@@ -153,4 +163,6 @@ Run `model/final_model_classification.ipynb` if you want the walkthrough version
 
 - `README.md`
 - `model/final_model_classification.ipynb`
-- `(Report) Applying Weight-of-Evidence and Information Value to Insurance Approval Models.pdf`
+- `report.pdf`
+
+Course project for *Machine Learning 1* (with Thi Phuong Trang Hoang).
